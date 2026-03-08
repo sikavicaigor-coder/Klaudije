@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f0c07" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Klaudije" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Klaudije</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#c9a96e;--gold-light:#e8c98a;--gold-dim:rgba(201,169,110,0.22);--bg:#0f0c07;--text:#e8dcc8;--text-dim:rgba(232,220,200,0.45);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+    #app{height:100dvh;display:flex;flex-direction:column}
+    #app::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(201,169,110,0.07) 0%,transparent 70%)}
+    #setup{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+    #setup.hidden{display:none}
+    .setup-logo{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:600;background:linear-gradient(135deg,#c9a96e,#f0d89a,#a07840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+    .setup-sub{color:var(--text-dim);font-style:italic;font-size:14px;margin-bottom:40px}
+    .setup-card{width:100%;max-width:400px;background:rgba(255,255,255,0.04);border:1px solid var(--gold-dim);border-radius:18px;padding:28px 24px}
+    .setup-label{font-size:11px;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;display:block}
+    .setup-input{width:100%;padding:13px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--gold-dim);border-radius:11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
+    .setup-input:focus{outline:none;border-color:var(--gold)}
+    .setup-hint{font-size:12px;color:var(--text-dim);margin-top:7px;line-height:1.5}
+    .setup-hint a{color:var(--gold);text-decoration:none}
+    .setup-btn{width:100%;margin-top:18px;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:11px;color:#1a1208;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+    header{position:relative;z-index:10;padding:calc(var(--safe-top) + 12px) 18px 12px;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;gap:11px;background:rgba(15,12,7,0.88);backdrop-filter:blur(12px);flex-shrink:0}
+    .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light),#a07840);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#1a1208;box-shadow:0 0 16px rgba(201,169,110,0.35)}
+    .h-name{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--gold-light);letter-spacing:.04em}
+    .h-sub{font-size:11px;color:rgba(201,169,110,0.45);font-style:italic}
+    .h-caps{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+    .cap{font-size:9px;padding:2px 6px;border:1px solid rgba(201,169,110,0.2);border-radius:20px;color:rgba(201,169,110,0.6)}
+    .settings-btn{background:none;border:none;cursor:pointer;color:rgba(201,169,110,0.35);font-size:17px;padding:4px;margin-left:6px}
+    #tabs{display:flex;border-bottom:1px solid rgba(201,169,110,0.1);background:rgba(15,12,7,0.7);flex-shrink:0}
+    .tab-btn{flex:1;padding:10px 0;background:transparent;border:none;border-bottom:2px solid transparent;color:rgba(201,169,110,0.4);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;-webkit-tap-highlight-color:transparent}
+    .tab-btn.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+    #chat-pane{flex:1;overflow-y:auto;padding:18px 14px;-webkit-overflow-scrolling:touch}
+    #chat-pane::-webkit-scrollbar{width:3px}
+    #chat-pane::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.2);border-radius:2px}
+    #welcome{text-align:center;padding:36px 8px 28px;animation:fadeUp .5s ease}
+    .w-logo{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;background:linear-gradient(135deg,var(--gold),#f0d89a,#a07840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+    .w-sub{color:var(--text-dim);font-style:italic;font-size:14px;margin-bottom:32px}
+    .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;max-width:460px;margin:0 auto}
+    .qbtn{padding:12px 11px;background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.18);border-radius:13px;color:var(--text);cursor:pointer;font-size:12px;text-align:left;display:flex;align-items:center;gap:7px;transition:all .2s;font-family:inherit;-webkit-tap-highlight-color:transparent}
+    .qbtn:active{background:rgba(201,169,110,0.1)}
+    .mrow{display:flex;margin-bottom:13px;gap:8px;align-items:flex-end;animation:fadeUp .3s ease}
+    .mrow.user{justify-content:flex-end}
+    .mavatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:#1a1208;flex-shrink:0}
+    .mbubble{max-width:73%;padding:10px 13px;font-size:13.5px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
+    .mbubble.user{background:linear-gradient(135deg,var(--gold),#b8914f);color:#1a1208;border-radius:17px 17px 4px 17px}
+    .mbubble.assistant{background:rgba(255,255,255,0.055);border:1px solid rgba(201,169,110,0.13);color:var(--text);border-radius:17px 17px 17px 4px}
+    .typing-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:12px;animation:fadeUp .3s ease}
+    .typing-bubble{background:rgba(255,255,255,0.055);border:1px solid rgba(201,169,110,0.13);border-radius:17px 17px 17px 4px;padding:11px 15px;display:flex;gap:5px;align-items:center}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:bounce 1.2s ease-in-out infinite}
+    .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+    #planner-pane{display:none;flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+    .planner-card{background:rgba(255,255,255,0.03);border:1px solid rgba(201,169,110,0.18);border-radius:15px;overflow:hidden;margin-bottom:14px;animation:fadeUp .4s ease}
+    .planner-header{padding:13px 16px;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;justify-content:space-between}
+    .planner-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold-light);font-weight:600}
+    .planner-date-lbl{font-size:11px;color:rgba(201,169,110,0.45);margin-top:2px}
+    .cal-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+    .planner-timeline{padding:12px 14px 14px;position:relative;height:380px}
+    .hour-label{position:absolute;font-size:9px;color:rgba(201,169,110,0.35);text-align:right;width:34px}
+    .hour-line{position:absolute;left:44px;right:0;border-top:1px solid rgba(201,169,110,0.07)}
+    .now-line{position:absolute;left:44px;right:0;border-top:1.5px solid var(--gold-light);z-index:10;display:flex;align-items:center}
+    .now-dot{width:7px;height:7px;border-radius:50%;background:var(--gold-light);margin-left:-3px;margin-top:-3px;box-shadow:0 0 8px rgba(232,201,138,.8)}
+    .ev-block{position:absolute;left:48px;right:4px;border-radius:6px;padding:3px 7px;overflow:hidden;min-height:20px}
+    .ev-title{font-size:10.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ev-time{font-size:9.5px;color:rgba(232,220,200,0.45)}
+    .ev-note{font-size:9.5px;font-style:italic}
+    .no-events{position:absolute;left:48px;right:0;top:50%;transform:translateY(-50%);text-align:center;color:rgba(201,169,110,0.3);font-size:13px;font-style:italic}
+    .load-btn{padding:11px 22px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;border-radius:11px;color:#1a1208;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:block;margin:0 auto}
+    .refresh-btn{padding:7px 16px;background:transparent;border:1px solid rgba(201,169,110,0.3);border-radius:9px;color:rgba(201,169,110,0.7);font-family:inherit;font-size:11px;cursor:pointer;display:block;margin:8px auto 0}
+    footer{position:relative;z-index:10;padding:10px 14px calc(var(--safe-bottom) + 12px);border-top:1px solid rgba(201,169,110,0.08);background:rgba(15,12,7,0.92);backdrop-filter:blur(12px);flex-shrink:0}
+    .input-wrap{display:flex;gap:9px;align-items:flex-end;background:rgba(255,255,255,0.05);border:1px solid var(--gold-dim);border-radius:17px;padding:9px 12px}
+    .input-wrap:focus-within{border-color:rgba(201,169,110,0.4)}
+    #msg-input{flex:1;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;resize:none;max-height:100px;overflow-y:auto}
+    #msg-input:focus{outline:none}
+    #msg-input::placeholder{color:rgba(232,220,200,0.28)}
+    #send-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));border:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1208;transition:all .2s;-webkit-tap-highlight-color:transparent}
+    #send-btn:disabled{background:rgba(201,169,110,0.15);color:rgba(201,169,110,0.3);cursor:default}
+    .footer-note{text-align:center;font-size:10px;color:rgba(201,169,110,0.22);margin-top:7px;letter-spacing:.04em}
+    @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-5px);opacity:1}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+<div id="setup">
+  <div class="setup-logo">Klaudije</div>
+  <div class="setup-sub">your personal assistant</div>
+  <div class="setup-card">
+    <label class="setup-label" for="api-key-input">Anthropic API Key</label>
+    <input class="setup-input" id="api-key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
+    <p class="setup-hint">Stored only on this device &middot; <a href="https://console.anthropic.com" target="_blank">Get a free key &rarr;</a></p>
+    <button class="setup-btn" onclick="saveKey()">Launch Klaudije &#10022;</button>
+  </div>
+</div>
+<div id="app">
+  <header>
+    <div class="avatar">K</div>
+    <div><div class="h-name">Klaudije</div><div class="h-sub">personal assistant</div></div>
+    <div class="h-caps">
+      <span class="cap">Gmail</span><span class="cap">Google Cal</span>
+      <span class="cap">Outlook</span><span class="cap">Apple Cal</span>
+    </div>
+    <button class="settings-btn" onclick="showSetup()">&#9881;</button>
+  </header>
+  <div id="tabs">
+    <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">&#128172;&#160; Chat</button>
+    <button class="tab-btn" id="tab-planner" onclick="switchTab('planner')">&#128197;&#160; Planner</button>
+  </div>
+  <div id="chat-pane">
+    <div id="welcome">
+      <div class="w-logo">Klaudije</div>
+      <div class="w-sub">How may I assist you today?</div>
+      <div class="qgrid">
+        <button class="qbtn" onclick="send('Show me my planner for today from all calendars.')"><span style="font-size:18px">&#128197;</span> Show my day</button>
+        <button class="qbtn" onclick="send('Summarize my latest emails.')"><span style="font-size:18px">&#128140;</span> Check inbox</button>
+        <button class="qbtn" onclick="send('Based on my calendars today, suggest an optimized daily schedule with focus blocks.')"><span style="font-size:18px">&#9889;</span> Plan my day</button>
+        <button class="qbtn" onclick="send('Help me draft a professional email.')"><span style="font-size:18px">&#9998;</span> Draft email</button>
+      </div>
+    </div>
+  </div>
+  <div id="planner-pane">
+    <div class="planner-card">
+      <div class="planner-header">
+        <div><div class="planner-title">Daily Planner</div><div class="planner-date-lbl" id="planner-date"></div></div>
+        <div class="cal-pills">
+          <span style="font-size:9px;padding:2px 7px;border-radius:20px;background:#4285f422;border:1px solid #4285f455;color:#4285f4">Google</span>
+          <span style="font-size:9px;padding:2px 7px;border-radius:20px;background:#0078d422;border:1px solid #0078d455;color:#0078d4">Outlook</span>
+          <span style="font-size:9px;padding:2px 7px;border-radius:20px;background:#30d15822;border:1px solid #30d15855;color:#30d158">Apple</span>
+        </div>
+      </div>
+      <div class="planner-timeline" id="timeline"></div>
+    </div>
+    <div id="planner-actions" style="text-align:center">
+      <button class="load-btn" onclick="loadPlanner()">Load Today's Schedule &#10022;</button>
+    </div>
+  </div>
+  <footer>
+    <div class="input-wrap">
+      <textarea id="msg-input" rows="1" placeholder="Ask Klaudije anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="send-btn" onclick="send()" disabled>&#8593;</button>
+    </div>
+    <div class="footer-note">Gmail &middot; Google &middot; Outlook &middot; Apple Calendar via Zapier &middot; Enter to send</div>
+  </footer>
+</div>
+<script>
+const SYSTEM=`You are Klaudije, a warm and brilliant personal assistant. Capabilities: Gmail management, Google Calendar, Microsoft Outlook/365 Calendar, Apple Calendar via Zapier, web search, daily schedule optimization. When asked to show the planner, respond with a JSON block ONLY in this format then a brief summary:\n\`\`\`planner\n{"date":"YYYY-MM-DD","events":[{"id":"1","title":"Title","start":"HH:MM","end":"HH:MM","calendar":"google|outlook|apple","color":"#hex","note":"optional"}]}\n\`\`\``;
+const MCP=[{type:"url",url:"https://gmail.mcp.claude.com/mcp",name:"gmail-mcp"},{type:"url",url:"https://gcal.mcp.claude.com/mcp",name:"gcal-mcp"},{type:"url",url:"https://m365.mcp.claude.com/mcp",name:"m365-mcp"},{type:"url",url:"https://zapier.mcp.claude.com/mcp",name:"zapier-mcp"}];
+const CAL_COLORS={google:"#4285f4",outlook:"#0078d4",apple:"#30d158"};
+const CAL_LABELS={google:"Google",outlook:"Outlook",apple:"Apple"};
+let history=[],apiKey=localStorage.getItem('k_key')||'',currentTab='chat';
+const DAY_START=6*60,DAY_SPAN=15*60;
+const HOURS=Array.from({length:16},(_,i)=>i+6);
+window.addEventListener('load',()=>{
+  if(apiKey)document.getElementById('setup').classList.add('hidden');
+  document.getElementById('msg-input').addEventListener('input',()=>{document.getElementById('send-btn').disabled=!document.getElementById('msg-input').value.trim();});
+  document.getElementById('planner-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  buildTimeline([]);
+});
+function saveKey(){const v=document.getElementById('api-key-input').value.trim();if(!v.startsWith('sk-ant')){alert('Enter a valid Anthropic API key');return;}apiKey=v;localStorage.setItem('k_key',v);document.getElementById('setup').classList.add('hidden');document.getElementById('msg-input').focus();}
+function showSetup(){document.getElementById('api-key-input').value=apiKey;document.getElementById('setup').classList.remove('hidden');}
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('tab-chat').classList.toggle('active',t==='chat');
+  document.getElementById('tab-planner').classList.toggle('active',t==='planner');
+  document.getElementById('chat-pane').style.display=t==='chat'?'':'none';
+  document.getElementById('planner-pane').style.display=t==='planner'?'':'none';
+}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function appendMsg(role,text){
+  const w=document.getElementById('welcome');if(w)w.remove();
+  const pane=document.getElementById('chat-pane');
+  const row=document.createElement('div');row.className='mrow '+role;
+  if(role==='assistant'){const av=document.createElement('div');av.className='mavatar';av.textContent='K';row.appendChild(av);}
+  const b=document.createElement('div');b.className='mbubble '+role;b.textContent=text;
+  row.appendChild(b);pane.appendChild(row);pane.scrollTop=pane.scrollHeight;
+}
+function showTyping(){
+  const pane=document.getElementById('chat-pane');
+  const row=document.createElement('div');row.className='typing-row';row.id='typing';
+  const av=document.createElement('div');av.className='mavatar';av.textContent='K';
+  const b=document.createElement('div');b.className='typing-bubble';
+  b.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  row.appendChild(av);row.appendChild(b);pane.appendChild(row);pane.scrollTop=pane.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+function timeToMin(t){const[h,m]=(t||'00:00').split(':').map(Number);return h*60+m;}
+function buildTimeline(events){
+  const tl=document.getElementById('timeline');tl.innerHTML='';
+  HOURS.forEach(hr=>{
+    const pct=((hr*60-DAY_START)/DAY_SPAN)*100;
+    const line=document.createElement('div');line.className='hour-line';line.style.top=pct+'%';
+    const lbl=document.createElement('span');lbl.className='hour-label';
+    lbl.style.cssText='top:'+pct+'%;transform:translateY(-50%);left:0';
+    lbl.textContent=hr>12?`${hr-12}pm`:hr===12?'12pm':`${hr}am`;
+    tl.appendChild(line);tl.appendChild(lbl);
+  });
+  const now=new Date(),nowMin=now.getHours()*60+now.getMinutes();
+  if(nowMin>=DAY_START&&nowMin<=DAY_START+DAY_SPAN){
+    const pct=((nowMin-DAY_START)/DAY_SPAN)*100;
+    const nl=document.createElement('div');nl.className='now-line';nl.style.top=pct+'%';
+    const dot=document.createElement('div');dot.className='now-dot';nl.appendChild(dot);
+    tl.appendChild(nl);
+  }
+  (events||[]).forEach(ev=>{
+    const sm=timeToMin(ev.start),em=timeToMin(ev.end);
+    const top=((sm-DAY_START)/DAY_SPAN)*100,ht=Math.max(((em-sm)/DAY_SPAN)*100,2.5);
+    const color=ev.color||CAL_COLORS[ev.calendar]||'#c9a96e';
+    const block=document.createElement('div');block.className='ev-block';
+    block.style.cssText=`top:${top}%;height:${ht}%;background:${color}22;border:1px solid ${color}55;border-left:3px solid ${color}`;
+    const title=document.createElement('div');title.className='ev-title';title.textContent=ev.title;block.appendChild(title);
+    if(ht>3.5){const time=document.createElement('div');time.className='ev-time';time.innerHTML=`${ev.start}&#8211;${ev.end} <span style="color:${color}">${CAL_LABELS[ev.calendar]||''}</span>`;block.appendChild(time);}
+    if(ev.note&&ht>5){const note=document.createElement('div');note.className='ev-note';note.style.color='#e8c98a';note.textContent='&#9888; '+ev.note;block.appendChild(note);}
+    tl.appendChild(block);
+  });
+  if(!events||events.length===0){const none=document.createElement('div');none.className='no-events';none.textContent='No events loaded yet';tl.appendChild(none);}
+}
+function loadPlanner(){switchTab('chat');send('Show me my planner for today from all my calendars (Google, Outlook, Apple) and display them.');}
+function parsePlanner(text){const m=text.match(/```planner\n([\s\S]*?)```/);if(!m)return null;try{return JSON.parse(m[1]);}catch{return null;}}
+async function send(text){
+  const inp=document.getElementById('msg-input');
+  const userText=text||inp.value.trim();
+  if(!userText)return;
+  if(!apiKey){showSetup();return;}
+  inp.value='';inp.style.height='auto';
+  document.getElementById('send-btn').disabled=true;
+  if(currentTab==='planner')switchTab('chat');
+  appendMsg('user',userText);
+  history.push({role:'user',content:userText});
+  showTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1024,system:SYSTEM,messages:history,tools:[{type:'web_search_20250305',name:'web_search'}],mcp_servers:MCP})
+    });
+    const data=await res.json();removeTyping();
+    if(data.error)throw new Error(data.error.message);
+    const fullReply=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()||'I encountered an issue.';
+    const pdata=parsePlanner(fullReply);
+    if(pdata){buildTimeline(pdata.events||[]);document.getElementById('planner-actions').innerHTML='<button class="refresh-btn" onclick="loadPlanner()">&#8635; Refresh from all calendars</button>';setTimeout(()=>switchTab('planner'),350);}
+    const display=fullReply.replace(/```planner[\s\S]*?```\n?/g,'').trim();
+    if(display){history.push({role:'assistant',content:display});appendMsg('assistant',display);}
+  }catch(err){removeTyping();appendMsg('assistant','Something went wrong: '+(err.message||''));}
+}
+</script>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body>
+</html>
